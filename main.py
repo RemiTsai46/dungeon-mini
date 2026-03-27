@@ -15,11 +15,11 @@ bot = commands.Bot(command_prefix="d!", intents=intents)
 
 async def load_extensions():
     for filename in os.listdir('./cogs'):
-        exc = ["__init__.py"]
+        exc = ["__init__.py","character.py","dungeon.py",'inventory.py',"recruit.py","status.py","update_log.py"]
         if filename.endswith('.py') and filename not in exc:
             await bot.load_extension(f'cogs.{filename[:-3]}')
 
-# @bot.command()
+@bot.command()
 async def fixsync(ctx):
     msg = await ctx.send("Sync fixed")
 
@@ -43,15 +43,16 @@ async def fixsync(ctx):
 #     )
 
 @bot.event
-async def on_ready():
-
-    for guild in bot.guilds:
-        bot.tree.copy_global_to(guild=guild)
-        await bot.tree.sync(guild=guild)
+async def on_ready():    
     print("Bot is up!")
 
     bot.tree.clear_commands(guild=None)
     await bot.tree.sync()
+
+    for guild in bot.guilds:
+        bot.tree.copy_global_to(guild=guild)
+        await bot.tree.sync(guild=guild)
+
     print("global cmds fixed")
 
     # for i in range(3):
