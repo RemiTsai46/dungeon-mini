@@ -33,25 +33,25 @@ async def fixsync(ctx):
  
     await msg.edit(content="ok")
 
-# @bot.command()
-# async def cmdcnt(ctx):
-#     guild_cmds = await bot.tree.fetch_commands(guild=ctx.guild)
-#     global_cmds = await bot.tree.fetch_commands()
+@bot.command()
+async def cmdcnt(ctx):
+    guild_cmds = await bot.tree.fetch_commands(guild=ctx.guild)
+    global_cmds = await bot.tree.fetch_commands()
 
-#     print(
-#         f"Guild: {len(guild_cmds)} | Global: {len(global_cmds)}"
-#     )
+    print(
+        f"Guild: {len(guild_cmds)} | Global: {len(global_cmds)}"
+    )
 
 @bot.event
 async def on_ready():    
     print("Bot is up!")
 
-    bot.tree.clear_commands(guild=None)
-    await bot.tree.sync()
-
     for guild in bot.guilds:
         bot.tree.copy_global_to(guild=guild)
         await bot.tree.sync(guild=guild)
+
+    bot.tree.clear_commands(guild=None)
+    await bot.tree.sync()
 
     print("global cmds fixed")
 
