@@ -16,9 +16,14 @@ class GeneralCommands(commands.Cog):
     @commands.hybrid_command(name="start-game", description="Start playing Dungeon Mini!")
     async def start_game(self, ctx: commands.Context):
         game_icon = discord.File(ICON_PATH, filename="icon.png")
+        user = ctx.author
 
         embed = discord.Embed()
+        embed.set_author(name=user.name, icon_url=user.display_avatar.url)
         embed.set_image(url="attachment://icon.png")
+        embed.add_field(name="<:elynn:1487375063996170283> amount",value="description")
+        embed.add_field(name="<:azure_dust:1487824468662419506> amount",value="description")
+        embed.add_field(name="<:azure_stone:1487825302196453516> amount",value="description")
         # await interaction.response.send_message(file=game_icon, embed=embed, view=Buttons())
         msg = await ctx.send(file=game_icon, embed=embed, view=Buttons()) # TBA store user current embed message id
 
@@ -28,7 +33,7 @@ class GeneralCommands(commands.Cog):
     @app_commands.describe(count="message count")
     async def nuke(self, ctx: commands.Context, count: int = 0):
         if count < 1:
-            await ctx.send("Amount of messages must be >0",ephemeral=True)
+            await ctx.send("Amount of messages must be > 0",ephemeral=True)
             return
         
         await ctx.defer(ephemeral=True)
