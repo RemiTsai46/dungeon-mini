@@ -15,11 +15,11 @@ class Buttons(discord.ui.View):
     async def slot_3(self, interaction, button):
         await interaction.response.send_message("start!", ephemeral = True)
 
-    @discord.ui.button(label="4", row=0, style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="4", row=1, style=discord.ButtonStyle.primary)
     async def slot_4(self, interaction, button):
         await interaction.response.send_message("start!", ephemeral = True)
 
-    @discord.ui.button(label="5", row=0, style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="5", row=1, style=discord.ButtonStyle.primary)
     async def slot_5(self, interaction, button):
         await interaction.response.send_message("start!", ephemeral = True)
 
@@ -27,27 +27,19 @@ class Buttons(discord.ui.View):
     async def slot_6(self, interaction, button):
         await interaction.response.send_message("start!", ephemeral = True)
 
-    @discord.ui.button(label="7", row=1, style=discord.ButtonStyle.primary)
-    async def slot_7(self, interaction, button):
+    @discord.ui.button(label="<<", row=2, style=discord.ButtonStyle.primary)
+    async def prv_pg(self, interaction, button):
         await interaction.response.send_message("start!", ephemeral = True)
 
-    @discord.ui.button(label="8", row=1, style=discord.ButtonStyle.primary)
-    async def slot_8(self, interaction, button):
-        await interaction.response.send_message("start!", ephemeral = True)
-
-    @discord.ui.button(label="9", row=1, style=discord.ButtonStyle.primary)
-    async def slot_9(self, interaction, button):
-        await interaction.response.send_message("start!", ephemeral = True)
-
-    @discord.ui.button(label="10", row=1, style=discord.ButtonStyle.primary)
-    async def slot_10(self, interaction, button):
+    @discord.ui.button(label=">>", row=2, style=discord.ButtonStyle.primary)
+    async def nxt_pg(self, interaction, button):
         await interaction.response.send_message("start!", ephemeral = True)
 
 class Character(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(name="character", description="Open the character interface")
+    @commands.hybrid_command(name="character", description="View your characters.")
     async def character_view(self, ctx: commands.Context):
         user = ctx.author
 

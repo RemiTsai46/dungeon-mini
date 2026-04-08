@@ -15,7 +15,7 @@ bot = commands.Bot(command_prefix="d!", intents=intents)
 
 async def load_extensions():
     for filename in os.listdir('./cogs'):
-        exc = ["__init__.py","dungeon.py",'inventory.py',"recruit.py","status.py","update_log.py"]
+        exc = ["__init__.py"]
         if filename.endswith('.py') and filename not in exc:
             await bot.load_extension(f'cogs.{filename[:-3]}')
 
