@@ -5,6 +5,7 @@ import asyncio
 from dotenv import load_dotenv
 from flask import Flask
 from threading import Thread
+from utils.db import init_database
 
 load_dotenv()
 token = os.getenv('TOKEN')
@@ -79,6 +80,8 @@ async def main():
     t = Thread(target=run_flask)
     t.daemon = True
     t.start()
+
+    init_database()
 
     async with bot:
         await load_extensions()
