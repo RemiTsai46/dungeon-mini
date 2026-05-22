@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+from utils.db import get_player_data
 
 class Buttons(discord.ui.View):
     @discord.ui.button(label="1", row=0, style=discord.ButtonStyle.primary)
@@ -42,13 +43,27 @@ class Inventory(commands.Cog):
     @commands.hybrid_command(name="inventory", description="View your inventory.")
     async def character_view(self, ctx: commands.Context):
         user = ctx.author
+        user_id = user.id
+        guild_id = ctx.guild.id
+        pdata = get_player_data(guild_id,user_id)
+
+        # Safety check: If the DB failed, stop here before printing!
+        if pdata is None:
+            print("[Cog Debug] pdata returned as None! Check the DB error above.")
+            await ctx.send("An error occurred while loading your profile. Please check the bot logs.", ephemeral=True)
+            return
 
         embed = discord.Embed(
             title="Inventory",
-            description="View your inventory"
+            description="View your inventory",
+            color=discord.Color.dark_gold()
         )
+        embed.set_author(name=user.name, icon_url=user.display_avatar.url)
+        embed.add_field(name="Elynn",value=f"<:elynn:1487375063996170283> {pdata.elynn}")
+        embed.add_field(name="Azure Dust",value=f"<:azure_dust:1487824468662419506> {pdata.azure_dust}")
+        embed.add_field(name="Azure Stone",value=f"<:azure_stone:1487825302196453516> {pdata.azure_stone}")
 
-        msg = await ctx.send(embed=embed, view=Buttons()) # TBA store user current embed message id
+        await ctx.send(embed=embed, view=Buttons()) # TBA store user current embed message id
 
 async def setup(bot):
     await bot.add_cog(Inventory(bot))

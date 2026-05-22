@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.mutable import MutableDict, MutableList
+import traceback
  
 app = Flask(__name__) 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../data/playerdata.db' # create playerdata.db
@@ -14,23 +15,26 @@ class User(db.Model):
     # nullable = False -> can't be null
     # unique = True -> values are different among all rows
 
-    guild_id = db.Column(db.BigInteger,primary_key=True)
-    user_id = db.Column(db.BigInteger, primary_key=True)
-    elynn = db.Column(db.Integer, nullable=False)
-    azure_dust = db.Column(db.Integer, nullable=False)
-    azure_stone = db.Column(db.Integer, nullable=False)
-    bsc_element_shard = db.Column(db.Integer, nullable=False)
-    adv_element_shard = db.Column(db.Integer, nullable=False)
-    mst_element_shard = db.Column(db.Integer, nullable=False)
+    guild_id: int = db.Column(db.BigInteger,primary_key=True)
+    user_id: int = db.Column(db.BigInteger, primary_key=True)
+    elynn: int = db.Column(db.Integer, nullable=False, default=0)
+    azure_dust: int = db.Column(db.Integer, nullable=False, default=0)
+    azure_stone:int = db.Column(db.Integer, nullable=False, default=0)
+    bsc_element_shard: int = db.Column(db.Integer, nullable=False, default=0)
+    adv_element_shard: int = db.Column(db.Integer, nullable=False, default=0)
+    mst_element_shard: int = db.Column(db.Integer, nullable=False, default=0)
+    spirit_crystal: int = db.Column(db.Integer, nullable=False, default=0)
+    curr_room: int = db.Column(db.Integer, nullable=False, default=1)
+    curr_level: int = db.Column(db.Integer, nullable=False, default=1) # the level the user will be in when start
     # description = db.Column(db.String(length=100), nullable=False)
 
-    # 4 Equipped characters. Stores a flat array: [101, 104, 112, 105]
+    # 4 Equipped characters. Stores a flat array: [1, 2, 3, 4]
     equipped_characters = db.Column(MutableList.as_mutable(db.JSON), default=list)
 
     # All owned characters. Stores a dictionary mapping ID -> stats:
     # {
-    #   "101": {"level": 55, "grade": 4},
-    #   "104": {"level": 1, "grade": 1}
+    #   "1": {"level": 55, "grade": 4},
+    #   "4": {"level": 1, "grade": 1}
     # }
     owned_characters = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
 
@@ -45,6 +49,31 @@ def init_database():
     with app.app_context():
         db.create_all()
         print("Database structure checked/initialized.")
+
+# --- PROFILE MANAGEMENT FUNCTIONS ---
+def get_player_data(guild_id: int, user_id: int):
+    try:
+        with app.app_context():
+            player = User.query.filter_by(guild_id=guild_id, user_id=user_id).one_or_none()
+            if player is None:
+                player = User(
+                    guild_id=guild_id,
+                    user_id=user_id,
+                    equipped_characters = [1],
+                    owned_characters={
+                        "1": {"level": 1, "grade": 1},
+                    }
+                )
+                db.session.add(player)
+                db.session.commit()
+                # Merge back into session to safely return the object state
+            db.session.refresh(player)
+            return player
+    except Exception as e:
+        print("[DB ERROR] Something went wrong inside get_player_data!")
+        # This forces the full error stack trace to print in your console
+        traceback.print_exc() 
+        return None
 
 # # --- PROFILE MANAGEMENT FUNCTIONS ---
 # def get_or_create_user(guild_id: int, user_id: int):
