@@ -23,6 +23,8 @@ class Status(commands.Cog):
             title="Status",
             description="View your status"
         )
+        embed.set_author(name=user.name, icon_url=user.display_avatar.urls)
+        embed.add_field(name="Dungeon Progress", value="player dungoen progress")
 
         msg = await ctx.send(embed=embed, view=Buttons()) # TBA store user current embed message id
 
