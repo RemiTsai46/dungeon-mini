@@ -28,15 +28,18 @@ class User(db.Model):
     curr_level: int = db.Column(db.Integer, nullable=False, default=1) # the level the user will be in when start
     # description = db.Column(db.String(length=100), nullable=False)
 
-    # 4 Equipped characters. Stores a flat array: [1, 2, 3, 4]
+    # equipped characters stored as list, example [1, 2, 3, 4]
     equipped_characters = db.Column(MutableList.as_mutable(db.JSON), default=list)
 
-    # All owned characters. Stores a dictionary mapping ID -> stats:
+    # owned characters/relics and its properties, stored as dict:
     # {
     #   "1": {"level": 55, "grade": 4},
     #   "4": {"level": 1, "grade": 1}
     # }
+    # "level" = character level = relic mastery
     owned_characters = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
+    # owned_relics = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
+
 
     def __repr__(self):
         return f'<User {self.user_id} in Guild {self.guild_id}>' # output when printed
@@ -66,32 +69,13 @@ def get_player_data(guild_id: int, user_id: int):
                 )
                 db.session.add(player)
                 db.session.commit()
-                # Merge back into session to safely return the object state
+            # let session know the new user to return normally
             db.session.refresh(player)
             return player
     except Exception as e:
         print("[DB ERROR] Something went wrong inside get_player_data!")
-        # This forces the full error stack trace to print in your console
         traceback.print_exc() 
         return None
-
-# # --- PROFILE MANAGEMENT FUNCTIONS ---
-# def get_or_create_user(guild_id: int, user_id: int):
-#     """Fetches a user profile or creates a default one if they are new."""
-#     with app.app_context():
-#         user = User.query.filter_by(guild_id=guild_id, user_id=user_id).first()
-#         if not user:
-#             user = User(
-#                 guild_id=guild_id,
-#                 user_id=user_id,
-#                 equipped_characters=[101],
-#                 owned_characters={"101": {"level": 1, "grade": 1}}
-#             )
-#             db.session.add(user)
-#             db.session.commit()
-#             # Merge back into session to safely return the object state
-#             db.session.refresh(user) 
-#         return user
 
 # def update_character_level(guild_id: int, user_id: int, char_id: str, new_level: int):
 #     """Safely upgrades a character's level inside the JSON dictionary."""
@@ -102,3 +86,36 @@ def get_player_data(guild_id: int, user_id: int):
 #             db.session.commit()
 #             return True
 #         return False
+
+# +----------------+
+# |   ADMIN ZONE   |
+# +----------------+
+def admin_modify_material(guild_id: int, user_id: int, material:str, operation: str, amount: int):
+    """
+    Strictly for admin commands to force-change a balance.
+
+    :param guild_id: Guild ID of which guild the message is in.
+    :param user_id: User ID of the message sender.
+    :param material: The material you want to modify.
+    :param operation: Operation of the modification, should only be `add`, `remove`, or `set`.
+    :param amount: Amount to modify.
+    """
+    with app.app_context():
+        user = User.query.filter_by(guild_id=guild_id, user_id=user_id).first()
+        if not user:
+            return False, "Player profile not found."
+        
+        # Get the current balance of the selected material dynamically
+        cur_bal = getattr(user, material, 0)
+
+        if operation == "add":
+            setattr(user, material, cur_bal + amount)
+        elif operation == "remove":
+            if user.elynn < amount:
+                return False, f"Player only has {user.elynn} Elynn."
+            setattr(user, material, cur_bal - amount)
+        else: # "set"
+            setattr(user, material, amount)
+
+        db.session.commit()
+        return True, getattr(user, material)

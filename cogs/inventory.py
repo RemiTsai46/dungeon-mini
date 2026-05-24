@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from utils.db import get_player_data
+from utils.db import get_player_data,admin_modify_material
+from typing import Literal
 
 class Buttons(discord.ui.View):
     @discord.ui.button(label="1", row=0, style=discord.ButtonStyle.primary)
@@ -64,6 +65,43 @@ class Inventory(commands.Cog):
         embed.add_field(name="Azure Stone",value=f"<:azure_stone:1487825302196453516> {pdata.azure_stone}")
 
         await ctx.send(embed=embed, view=Buttons()) # TBA store user current embed message id
+
+    @commands.hybrid_command(name="modify-material", description="[Admin Only] Modify a user's Elynn balance.")
+    @commands.has_permissions(administrator=True)
+    @app_commands.default_permissions(manage_guild=True) # Hides it from the Slash menu for non-admins
+    @app_commands.describe(
+        target="The player whose value you want to modify.",
+        material="The material you want to modify.",
+        action="Operation of the modification, should only be \"add\", \"remove\", or \"set\".",
+        amount="Amount to modify."
+        )
+    async def modify_material(
+        self, 
+        ctx: commands.Context, 
+        target: discord.Member, 
+        material: Literal[
+            "elynn",
+            "azure_dust",
+            "azure_stone",
+            "basic_element_shard",
+            "advanced_element_shard",
+            "master_element_shard",
+            "spirit_crystal"],
+        action: Literal["add", "remove", "set"], 
+        amount: int
+    ):
+        await ctx.defer(ephemeral=True)
+
+        if amount < 0:
+            await ctx.send("⚠️ Amount must be a positive number.", ephemeral=True)
+            return
+
+        success, result = admin_modify_material(ctx.guild.id,target.id,action,amount)
+
+        if success:
+            await ctx.send(f"✅ Successfully updated {target.display_name}'s {material}. Current Balance: {result}.", ephemeral=True)
+        else:
+            await ctx.send(f"❌ Failed: {result}", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Inventory(bot))
