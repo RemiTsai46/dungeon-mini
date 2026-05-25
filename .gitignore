@@ -1,5 +1,13 @@
+# dungeon-mini
+data/*
+!data/.gitkeep
+.vscode/
+**/.vscode/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
+__pycache__/*
+**/__pycache__/
 *.py[codz]
 *$py.class
 

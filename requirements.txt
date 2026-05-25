@@ -1,5 +1,6 @@
 discord
 flask
+flask_sqlalchemy
 pillow
 python-dotenv
 asyncpg
