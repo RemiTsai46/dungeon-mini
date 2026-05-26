@@ -10,6 +10,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Turns off heavy overhead 
 db = SQLAlchemy(app) # create db object
 
 class User(db.Model):
+    __tablename__ = 'users'
     # primary_key -> defines row id
     # length -> str length max limit
     # nullable = False -> can't be null
@@ -17,6 +18,8 @@ class User(db.Model):
 
     guild_id: int = db.Column(db.BigInteger,primary_key=True)
     user_id: int = db.Column(db.BigInteger, primary_key=True)
+
+    # currencies
     elynn: int = db.Column(db.Integer, nullable=False, default=0)
     azure_dust: int = db.Column(db.Integer, nullable=False, default=0)
     azure_stone:int = db.Column(db.Integer, nullable=False, default=0)
@@ -24,12 +27,17 @@ class User(db.Model):
     adv_element_shard: int = db.Column(db.Integer, nullable=False, default=0)
     mst_element_shard: int = db.Column(db.Integer, nullable=False, default=0)
     spirit_crystal: int = db.Column(db.Integer, nullable=False, default=0)
+
+    # States can be: 'idle', 'dungeon', 'raid', 'pvp'
+    curr_state: str = db.Column(db.String, nullable=False, default="idle")
     curr_room: int = db.Column(db.Integer, nullable=False, default=1)
     curr_level: int = db.Column(db.Integer, nullable=False, default=1) # the level the user will be in when start
-    # description = db.Column(db.String(length=100), nullable=False)
 
     # equipped characters stored as list, example [1, 2, 3, 4]
-    equipped_characters = db.Column(MutableList.as_mutable(db.JSON), default=list)
+    equipped_souls = db.Column(
+        MutableList.as_mutable(db.JSON),
+        default=lambda: [None, None, None, None]
+    )
 
     # owned characters/relics and its properties, stored as dict:
     # {
@@ -37,14 +45,17 @@ class User(db.Model):
     #   "4": {"level": 1, "grade": 1}
     # }
     # "level" = character level = relic mastery
-    owned_characters = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
+    owned_souls = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
     # owned_relics = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
-
 
     def __repr__(self):
         return f'<User {self.user_id} in Guild {self.guild_id}>' # output when printed
     
-
+CURRENCY_EMOJIS = {
+    "elynn": "<:elynn:1487375063996170283>",              # Standard emoji fallback
+    "azure_dust": "<:azure_dust:1487824468662419506>",  # Custom emoji format: <:name:id>
+    "azure_stone": "<:azure_stone:1487825302196453516>",
+}
 
 # --- STARTUP CHECK ---
 def init_database():
@@ -62,8 +73,8 @@ def get_player_data(guild_id: int, user_id: int):
                 player = User(
                     guild_id=guild_id,
                     user_id=user_id,
-                    equipped_characters = [1],
-                    owned_characters={
+                    equipped_souls = [1],
+                    owned_souls={
                         "1": {"level": 1, "grade": 1},
                     }
                 )
@@ -101,9 +112,27 @@ def admin_modify_material(guild_id: int, user_id: int, material:str, operation: 
     :param amount: Amount to modify.
     """
     with app.app_context():
-        user = User.query.filter_by(guild_id=guild_id, user_id=user_id).first()
-        if not user:
-            return False, "Player profile not found."
+        user = User.query.filter_by(guild_id=guild_id, user_id=user_id).one_or_none()
+        if user is None:
+            try:
+                if user is None:
+                    user = User(
+                        guild_id=guild_id,
+                        user_id=user_id,
+                        equipped_souls = [1],
+                        owned_souls={
+                            "1": {"level": 1, "grade": 1},
+                        }
+                    )
+                    db.session.add(user)
+                    db.session.commit()
+                # let session know the new user to return normally
+                db.session.refresh(user)
+                return user
+            except Exception as e:
+                print("[DB ERROR] Something went wrong inside get_player_data!")
+                traceback.print_exc()
+                return False, "[DB ERROR] Something went wrong inside get_player_data!"
         
         # Get the current balance of the selected material dynamically
         cur_bal = getattr(user, material, 0)
@@ -118,4 +147,8 @@ def admin_modify_material(guild_id: int, user_id: int, material:str, operation: 
             setattr(user, material, amount)
 
         db.session.commit()
-        return True, getattr(user, material)
+
+        emoji = CURRENCY_EMOJIS.get(material, "🪙") # Fallback to a generic coin
+        new_bal_str = f"{emoji} {getattr(user, material)}"
+
+        return True, new_bal_str

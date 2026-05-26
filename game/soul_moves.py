@@ -1,40 +1,20 @@
-from abc import ABC, abstractmethod
+from entity import CombatEntity
 
-class CombatEntity(ABC):
-    def __init__(self, id: int, name:str, level: int, grade: int, rarity: int):
-        self.id = id
-        self.name = name
-        self.level = level
-        self.grade = grade
-        self.rarity = rarity
 
-    @abstractmethod
-    def m1(self, target): 
-        """Standard basic attack."""
-        pass
-
-    @abstractmethod
-    def skill(self, target):
-        """Cooldown-based or energy-based tactical skill."""
-        pass
-
-    def ult(self, targets: list): 
-        """
-        Default Ultimate behavior. Most enemies don't have one, 
-        so we default to doing nothing. Characters will override this.
-        """
-        return f"{self.name} does not have an Ultimate ability!"
-
-    @property
-    @abstractmethod
-    def passives(self) -> list:
-        """Returns a list of passive function behaviors or identifiers."""
-        pass
-
-class Caren(CombatEntity):
-    def __init__(self, level: int, grade: int):
-        # We hardcode the ID (101) and Name ("Ember Knight") right here!
-        super().__init__(character_id=101, name="Ember Knight", level=level, grade=grade)
-
-    def m1(self, target): return f"{self.name} slashes!"
-    def skill(self, target): return f"{self.name} uses Flame Burst!"
+SOUL_REGISTRY = {
+    301: {  # Unique Character ID
+        "name": "Caren",
+        "rarity": "Rare",
+        "element": "Fire",
+        "class": "Warrior",
+        "stats": {"hp": 50, "dmg": 10, "cc": 0.05, "cd": 1.20, "dfs": 0.00},
+        "moves": {
+            "m1": {"name": "Fire Slash", "target_type": "Single", "multiplier": 1.0, "rqmo": 0},
+            "skl": {"name": "Flame Spin", "target_type": "Extended", "multiplier": 1.5, "rqmo": 3},
+            "ult": {"name": "Pyro Fury", "target_type": "Extended", "multiplier": 2.0, "rqmo": 5}
+        },
+        "passives": {
+            "p1": {"name": "Rage mode", "trigger": "after_ult", "effect": {"mo_gain": 1}}
+        }
+    }
+}
