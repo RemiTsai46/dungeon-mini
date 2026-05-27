@@ -20,3 +20,17 @@ class CombatEntity:
         # Active combat states
         self.statuses = {} 
         self.magic_orbs = 0 # Every entity tracks its own resource pool
+
+
+PASSIVE_UNLOCK_LEVELS = {
+    "p1": 40,
+    "p2": 80,
+    "p3": 100
+}
+
+RARITY_PASSIVE_LIMITS = {
+    "Rare": 1,       # max p1
+    "Epic": 2,       # max p2
+    "Legendary": 2,  # max p2
+    "Secret": 3      # max p3
+}
