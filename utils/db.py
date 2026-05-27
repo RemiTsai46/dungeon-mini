@@ -88,6 +88,22 @@ def get_player_data(guild_id: int, user_id: int):
         traceback.print_exc() 
         return None
 
+def is_player_idle(guild_id: int, user_id: int) -> bool:
+    """Returns True if the player is free to start an activity, False if busy."""
+    player = get_player_data(guild_id,user_id)
+    if player is None:
+        return False
+    return player.status == "idle"
+
+def set_player_status(guild_id: int, user_id: int, new_status: str):
+    """Updates the player's current activity state in the database."""
+    player = get_player_data(guild_id, user_id)
+    if player:
+        player.status = new_status
+        db.session.commit()  # Commits the status change to the DB immediately
+        return True
+    return False
+
 # def update_character_level(guild_id: int, user_id: int, char_id: str, new_level: int):
 #     """Safely upgrades a character's level inside the JSON dictionary."""
 #     with app.app_context():
@@ -111,44 +127,25 @@ def admin_modify_material(guild_id: int, user_id: int, material:str, operation: 
     :param operation: Operation of the modification, should only be `add`, `remove`, or `set`.
     :param amount: Amount to modify.
     """
-    with app.app_context():
-        user = User.query.filter_by(guild_id=guild_id, user_id=user_id).one_or_none()
-        if user is None:
-            try:
-                if user is None:
-                    user = User(
-                        guild_id=guild_id,
-                        user_id=user_id,
-                        equipped_souls = [1],
-                        owned_souls={
-                            "1": {"level": 1, "grade": 1},
-                        }
-                    )
-                    db.session.add(user)
-                    db.session.commit()
-                # let session know the new user to return normally
-                db.session.refresh(user)
-                return user
-            except Exception as e:
-                print("[DB ERROR] Something went wrong inside get_player_data!")
-                traceback.print_exc()
-                return False, "[DB ERROR] Something went wrong inside get_player_data!"
+    user = get_player_data(guild_id,user_id)
+    if user is None:
+        return False, "[DB ERROR] Something went wrong inside get_player_data!"
         
-        # Get the current balance of the selected material dynamically
-        cur_bal = getattr(user, material, 0)
+    # Get the current balance of the selected material dynamically
+    cur_bal = getattr(user, material, 0)
+    emoji = CURRENCY_EMOJIS.get(material, "🪙") # Fallback to a generic coin
 
-        if operation == "add":
-            setattr(user, material, cur_bal + amount)
-        elif operation == "remove":
-            if user.elynn < amount:
-                return False, f"Player only has {user.elynn} Elynn."
-            setattr(user, material, cur_bal - amount)
-        else: # "set"
-            setattr(user, material, amount)
+    if operation == "add":
+        setattr(user, material, cur_bal + amount)
+    elif operation == "remove":
+        if user.elynn < amount:
+            return False, f"Player only has {emoji} {cur_bal} {material.replace('_', ' ').title()}."
+        setattr(user, material, cur_bal - amount)
+    else: # "set"
+        setattr(user, material, amount)
 
-        db.session.commit()
+    db.session.commit()
 
-        emoji = CURRENCY_EMOJIS.get(material, "🪙") # Fallback to a generic coin
-        new_bal_str = f"{emoji} {getattr(user, material)}"
+    new_bal_str = f"{emoji} {getattr(user, material)}"
 
-        return True, new_bal_str
+    return True, new_bal_str
