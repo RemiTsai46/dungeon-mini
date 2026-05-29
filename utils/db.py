@@ -41,8 +41,8 @@ class User(db.Model):
 
     # owned characters/relics and its properties, stored as dict:
     # {
-    #   "1": {"level": 55, "grade": 4},
-    #   "4": {"level": 1, "grade": 1}
+    #   301: {"level": 55, "grade": 4},
+    #   304: {"level": 1, "grade": 1}
     # }
     # "level" = character level = relic mastery
     owned_souls = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
