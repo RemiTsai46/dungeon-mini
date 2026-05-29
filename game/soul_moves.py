@@ -11,9 +11,9 @@ SOUL_REGISTRY = {
         "stats": {
             "hp": 50,
             "dmg": 10,
-            "cc": 0.05,   # 5%
-            "cd": 1.2,   # 120%
-            "dfs": 0.0   # 0%
+            "cc": 0.05, # 5%
+            "cd": 1.2, # 120%
+            "dfs": 0.0 # 0%
         },
         
         # Moves Kit
@@ -56,5 +56,38 @@ SOUL_REGISTRY = {
             "p2": None,
             "p3": None
         }
+    }
+}
+
+ENEMY_REGISTRY ={
+
+}
+
+CHAPTER_REGISTRY = {
+    1: {  # Chapter 1
+        1: [
+            None,
+            {"id":101,"level":1},
+            {"id":101,"level":1},
+            None
+        ],
+        2: [
+            {"id":101,"level":3},
+            {"id":101,"level":3},
+            {"id":101,"level":3},
+            {"id":101,"level":3}
+        ],
+        3: [
+            {"id":101,"level":5},
+            {"id":102,"level":5},
+            {"id":102,"level":5},
+            {"id":101,"level":5}
+        ],
+        4: [
+            {"id":102,"level":10},
+            {"id":103,"level":10},
+            {"id":103,"level":10},
+            {"id":102,"level":10}
+        ],
     }
 }
