@@ -68,7 +68,7 @@ class Inventory(commands.Cog):
 
     @commands.hybrid_command(name="modify-material", description="[Admin Only] Modify a user's Elynn balance.")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(manage_guild=True) # Hides it from the Slash menu for non-admins
+    @app_commands.default_permissions(manage_guild=True)
     @app_commands.describe(
         target="The player whose value you want to modify.",
         material="The material you want to modify.",

@@ -55,6 +55,7 @@ CURRENCY_EMOJIS = {
     "elynn": "<:elynn:1487375063996170283>",              # Standard emoji fallback
     "azure_dust": "<:azure_dust:1487824468662419506>",  # Custom emoji format: <:name:id>
     "azure_stone": "<:azure_stone:1487825302196453516>",
+    "spirit_crystal": "<spirit_crystal:1490707913814048929>"
 }
 
 # --- STARTUP CHECK ---

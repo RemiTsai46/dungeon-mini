@@ -9,7 +9,6 @@ class Dungeon(commands.Cog):
 
     @commands.hybrid_command(name="dungeon", description="Start a dungeon run.")
     async def dungeon(self, ctx: commands.Context):
-        # 1. Defer the response immediately to prevent Discord's 3-second timeout
         await ctx.defer(ephemeral=False)
         
         guild_id = ctx.guild.id
@@ -28,8 +27,8 @@ class Dungeon(commands.Cog):
         
         # 3. Create and send the initial loading layout embed
         embed = discord.Embed(
-            title="⚔️ Entering the Dungeon...", 
-            description="Preparing the battlefield and loading your Soul stats...",
+            title="⚔️ Intermission ⚔️", 
+            description="Setting up the level...",
             color=0x442200
         )
 
