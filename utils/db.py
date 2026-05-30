@@ -74,9 +74,9 @@ def get_player_data(guild_id: int, user_id: int):
                 player = User(
                     guild_id=guild_id,
                     user_id=user_id,
-                    equipped_souls = [1],
+                    equipped_souls = [301,None,None,None],
                     owned_souls={
-                        "1": {"level": 1, "grade": 1},
+                        "301": {"level": 1, "grade": 1},
                     }
                 )
                 db.session.add(player)
@@ -94,14 +94,15 @@ def is_player_idle(guild_id: int, user_id: int) -> bool:
     player = get_player_data(guild_id,user_id)
     if player is None:
         return False
-    return player.status == "idle"
+    return player.curr_state == "idle"
 
-def set_player_status(guild_id: int, user_id: int, new_status: str):
+def set_player_state(guild_id: int, user_id: int, new_state: str):
     """Updates the player's current activity state in the database."""
     player = get_player_data(guild_id, user_id)
     if player:
-        player.status = new_status
-        db.session.commit()  # Commits the status change to the DB immediately
+        player.curr_state = new_state
+        with app.app_context():
+            db.session.commit()  # Commits the status change to the DB immediately
         return True
     return False
 

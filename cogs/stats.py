@@ -29,7 +29,8 @@ class Status(commands.Cog):
         user_data = db.get_player_data(guild_id,user_id)
 
         embed = discord.Embed(
-            title=f"{user.mention}'s Stats",
+            title=f"{user.display_name} 's Stats",
+            color=discord.Color.blue()
         )
         embed.set_author(name=user.name, icon_url=user.display_avatar.url)
         embed.set_thumbnail(url="attachment://icon.png")
