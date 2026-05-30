@@ -1,5 +1,3 @@
-from entity import CombatEntity
-
 SOUL_REGISTRY = {
     301: {
         "name": "Caren",
@@ -22,7 +20,7 @@ SOUL_REGISTRY = {
                 "name": "Fire Slash",
                 "description": "Slash an enemy with a burning sword",
                 "target": "Single",
-                "element": "Physical", # Default weapon hit
+                "element": "Physical",
                 "multi": 1.0,
                 "rqmo": 0
             },
@@ -41,7 +39,7 @@ SOUL_REGISTRY = {
                 "element": "Fire",
                 "multi": 2.0,
                 "rqmo": 5,
-                "buff": {"type": "dmg_boost", "value": 0.10} # Damage increase 10%
+                "buff": {"type": "dmg_boost", "value": 0.10}
             }
         },
         
@@ -56,38 +54,5 @@ SOUL_REGISTRY = {
             "p2": None,
             "p3": None
         }
-    }
-}
-
-ENEMY_REGISTRY ={
-
-}
-
-CHAPTER_REGISTRY = {
-    1: {  # Chapter 1
-        1: [
-            None,
-            {"id":101,"level":1},
-            {"id":101,"level":1},
-            None
-        ],
-        2: [
-            {"id":101,"level":3},
-            {"id":101,"level":3},
-            {"id":101,"level":3},
-            {"id":101,"level":3}
-        ],
-        3: [
-            {"id":101,"level":5},
-            {"id":102,"level":5},
-            {"id":102,"level":5},
-            {"id":101,"level":5}
-        ],
-        4: [
-            {"id":102,"level":10},
-            {"id":103,"level":10},
-            {"id":103,"level":10},
-            {"id":102,"level":10}
-        ],
     }
 }

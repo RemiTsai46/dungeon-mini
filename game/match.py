@@ -2,10 +2,10 @@ import math
 import asyncio
 import discord
 from game.soul_moves import SOUL_REGISTRY
-from game.effect_logic import EFFECT_REGISTRY
+from game.enemy_moves import ENEMY_REGISTRY
+from game.effects import EFFECT_REGISTRY
 from utils import db
 
-# Universal progression rules
 PASSIVE_UNLOCK_LEVELS = {"p1": 40, "p2": 80, "p3": 120}
 RARITY_PASSIVE_LIMITS = {"Rare": 1, "Epic": 2, "Legendary": 2, "Secret": 3}
 

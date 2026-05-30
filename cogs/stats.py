@@ -32,13 +32,9 @@ class Status(commands.Cog):
             title=f"{user.mention}'s Stats",
         )
         embed.set_author(name=user.name, icon_url=user.display_avatar.url)
-        print("author")
         embed.set_thumbnail(url="attachment://icon.png")
-        print("icon")
         embed.add_field(name="Current Level", value=f"Room **{user_data.curr_room}**, Level **{user_data.curr_level}**")
-        print("lvl")
         embed.add_field(name="Current Status", value=user_data.curr_state)
-        print("status")
         await ctx.send(file=game_icon, embed=embed)
 
 async def setup(bot):

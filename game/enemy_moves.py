@@ -1,1 +1,3 @@
-from entity import CombatEntity
+ENEMY_REGISTRY ={
+
+}
