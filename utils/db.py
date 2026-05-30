@@ -10,6 +10,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Turns off heavy overhead 
 db = SQLAlchemy(app) # create db object
 
 class User(db.Model):
+    __tablename__ = 'users'
     # primary_key -> defines row id
     # length -> str length max limit
     # nullable = False -> can't be null
@@ -17,6 +18,8 @@ class User(db.Model):
 
     guild_id: int = db.Column(db.BigInteger,primary_key=True)
     user_id: int = db.Column(db.BigInteger, primary_key=True)
+
+    # currencies
     elynn: int = db.Column(db.Integer, nullable=False, default=0)
     azure_dust: int = db.Column(db.Integer, nullable=False, default=0)
     azure_stone:int = db.Column(db.Integer, nullable=False, default=0)
@@ -24,27 +27,36 @@ class User(db.Model):
     adv_element_shard: int = db.Column(db.Integer, nullable=False, default=0)
     mst_element_shard: int = db.Column(db.Integer, nullable=False, default=0)
     spirit_crystal: int = db.Column(db.Integer, nullable=False, default=0)
+
+    # States can be: 'idle', 'dungeon', 'raid', 'pvp'
+    curr_state: str = db.Column(db.String, nullable=False, default="idle")
     curr_room: int = db.Column(db.Integer, nullable=False, default=1)
     curr_level: int = db.Column(db.Integer, nullable=False, default=1) # the level the user will be in when start
-    # description = db.Column(db.String(length=100), nullable=False)
 
     # equipped characters stored as list, example [1, 2, 3, 4]
-    equipped_characters = db.Column(MutableList.as_mutable(db.JSON), default=list)
+    equipped_souls = db.Column(
+        MutableList.as_mutable(db.JSON),
+        default=lambda: [None, None, None, None]
+    )
 
     # owned characters/relics and its properties, stored as dict:
     # {
-    #   "1": {"level": 55, "grade": 4},
-    #   "4": {"level": 1, "grade": 1}
+    #   301: {"level": 55, "grade": 4},
+    #   304: {"level": 1, "grade": 1}
     # }
     # "level" = character level = relic mastery
-    owned_characters = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
+    owned_souls = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
     # owned_relics = db.Column(MutableDict.as_mutable(db.JSON), default=dict)
-
 
     def __repr__(self):
         return f'<User {self.user_id} in Guild {self.guild_id}>' # output when printed
     
-
+CURRENCY_EMOJIS = {
+    "elynn": "<:elynn:1487375063996170283>",              # Standard emoji fallback
+    "azure_dust": "<:azure_dust:1487824468662419506>",  # Custom emoji format: <:name:id>
+    "azure_stone": "<:azure_stone:1487825302196453516>",
+    "spirit_crystal": "<spirit_crystal:1490707913814048929>"
+}
 
 # --- STARTUP CHECK ---
 def init_database():
@@ -62,9 +74,9 @@ def get_player_data(guild_id: int, user_id: int):
                 player = User(
                     guild_id=guild_id,
                     user_id=user_id,
-                    equipped_characters = [1],
-                    owned_characters={
-                        "1": {"level": 1, "grade": 1},
+                    equipped_souls = [301,None,None,None],
+                    owned_souls={
+                        "301": {"level": 1, "grade": 1},
                     }
                 )
                 db.session.add(player)
@@ -76,6 +88,23 @@ def get_player_data(guild_id: int, user_id: int):
         print("[DB ERROR] Something went wrong inside get_player_data!")
         traceback.print_exc() 
         return None
+
+def is_player_idle(guild_id: int, user_id: int) -> bool:
+    """Returns True if the player is free to start an activity, False if busy."""
+    player = get_player_data(guild_id,user_id)
+    if player is None:
+        return False
+    return player.curr_state == "idle"
+
+def set_player_state(guild_id: int, user_id: int, new_state: str):
+    """Updates the player's current activity state in the database."""
+    player = get_player_data(guild_id, user_id)
+    if player:
+        player.curr_state = new_state
+        with app.app_context():
+            db.session.commit()  # Commits the status change to the DB immediately
+        return True
+    return False
 
 # def update_character_level(guild_id: int, user_id: int, char_id: str, new_level: int):
 #     """Safely upgrades a character's level inside the JSON dictionary."""
@@ -100,22 +129,25 @@ def admin_modify_material(guild_id: int, user_id: int, material:str, operation: 
     :param operation: Operation of the modification, should only be `add`, `remove`, or `set`.
     :param amount: Amount to modify.
     """
-    with app.app_context():
-        user = User.query.filter_by(guild_id=guild_id, user_id=user_id).first()
-        if not user:
-            return False, "Player profile not found."
+    user = get_player_data(guild_id,user_id)
+    if user is None:
+        return False, "[DB ERROR] Something went wrong inside get_player_data!"
         
-        # Get the current balance of the selected material dynamically
-        cur_bal = getattr(user, material, 0)
+    # Get the current balance of the selected material dynamically
+    cur_bal = getattr(user, material, 0)
+    emoji = CURRENCY_EMOJIS.get(material, "🪙") # Fallback to a generic coin
 
-        if operation == "add":
-            setattr(user, material, cur_bal + amount)
-        elif operation == "remove":
-            if user.elynn < amount:
-                return False, f"Player only has {user.elynn} Elynn."
-            setattr(user, material, cur_bal - amount)
-        else: # "set"
-            setattr(user, material, amount)
+    if operation == "add":
+        setattr(user, material, cur_bal + amount)
+    elif operation == "remove":
+        if user.elynn < amount:
+            return False, f"Player only has {emoji} {cur_bal} {material.replace('_', ' ').title()}."
+        setattr(user, material, cur_bal - amount)
+    else: # "set"
+        setattr(user, material, amount)
 
-        db.session.commit()
-        return True, getattr(user, material)
+    db.session.commit()
+
+    new_bal_str = f"{emoji} {getattr(user, material)}"
+
+    return True, new_bal_str

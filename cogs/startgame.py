@@ -13,6 +13,8 @@ class GeneralCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.has_permissions(administrator=True)
+    @app_commands.default_permissions(administrator=True)
     @commands.hybrid_command(name="start-game", description="Start playing Dungeon Mini!")
     async def start_game(self, ctx: commands.Context):
         game_icon = discord.File(ICON_PATH, filename="icon.png")
@@ -25,7 +27,7 @@ class GeneralCommands(commands.Cog):
         embed.add_field(name="<:azure_dust:1487824468662419506> amount",value="description")
         embed.add_field(name="<:azure_stone:1487825302196453516> amount",value="description")
         # await interaction.response.send_message(file=game_icon, embed=embed, view=Buttons())
-        msg = await ctx.send(file=game_icon, embed=embed, view=Buttons()) # TBA store user current embed message id
+        await ctx.send(file=game_icon, embed=embed, view=Buttons()) # TBA store user current embed message id
 
     @commands.hybrid_command(name="nuke",description=r"Delete {count} messages")
     @commands.has_permissions(manage_messages=True)

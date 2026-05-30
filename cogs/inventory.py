@@ -68,7 +68,7 @@ class Inventory(commands.Cog):
 
     @commands.hybrid_command(name="modify-material", description="[Admin Only] Modify a user's Elynn balance.")
     @commands.has_permissions(administrator=True)
-    @app_commands.default_permissions(manage_guild=True) # Hides it from the Slash menu for non-admins
+    @app_commands.default_permissions(manage_guild=True)
     @app_commands.describe(
         target="The player whose value you want to modify.",
         material="The material you want to modify.",
@@ -80,26 +80,29 @@ class Inventory(commands.Cog):
         ctx: commands.Context, 
         target: discord.Member, 
         material: Literal[
-            "elynn",
-            "azure_dust",
-            "azure_stone",
-            "basic_element_shard",
-            "advanced_element_shard",
-            "master_element_shard",
-            "spirit_crystal"],
-        action: Literal["add", "remove", "set"], 
+            "elynn", "azure_dust", "azure_stone", 
+            "basic_element_shard", "advanced_element_shard", 
+            "master_element_shard", "spirit_crystal"
+        ],
+        action: Literal["add", "remove", "set"],
         amount: int
     ):
         await ctx.defer(ephemeral=True)
+
+        # normalize casing
+        material = material.lower().strip()
+        action = action.lower().strip()
 
         if amount < 0:
             await ctx.send("⚠️ Amount must be a positive number.", ephemeral=True)
             return
 
-        success, result = admin_modify_material(ctx.guild.id,target.id,action,amount)
+        success, result = admin_modify_material(ctx.guild.id,target.id,material,action,amount)
+
+        material_name = material.replace("_", " ").title()
 
         if success:
-            await ctx.send(f"✅ Successfully updated {target.display_name}'s {material}. Current Balance: {result}.", ephemeral=True)
+            await ctx.send(f"✅ Successfully updated {target.display_name}'s {material_name}. Current Balance: {result}.", ephemeral=True)
         else:
             await ctx.send(f"❌ Failed: {result}", ephemeral=True)
 
